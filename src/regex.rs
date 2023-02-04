@@ -9,7 +9,11 @@ pub struct Regex {
 
 impl Regex {
     pub fn new(pat: &str) -> Result<Self, CompileError> {
-        let compiled_byte_code = bindings::compile(pat, Flags::empty())?;
+        Self::with_flags(pat, Flags::empty())
+    }
+
+    pub fn with_flags(pat: &str, flags: Flags) -> Result<Self, CompileError> {
+        let compiled_byte_code = bindings::compile(pat, flags)?;
         Ok(Regex { compiled_byte_code })
     }
 

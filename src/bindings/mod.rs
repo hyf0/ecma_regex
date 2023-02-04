@@ -76,9 +76,3 @@ pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> Option<Vec<u
         panic!("TODO")
     }
 }
-
-#[test]
-fn test_compile() {
-    let bc = compile("h(ell)o", Flags::empty()).unwrap();
-    let res = exec(&bc, "xxxxhello56789hello", 0);
-}

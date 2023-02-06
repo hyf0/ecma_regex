@@ -1,6 +1,9 @@
 # ecma_regex
 
-Use JavaScript `RegExp` in Rust right now! 
+Reliable JavaScript `RegExp` in Rust.
+
+- Drive by QuickJS under the hood.
+- Passes nearly 100% of the ECMAScript Test Suite tests
 
 Build on top of [libregexp-sys](https://github.com/hyf0/libregexp-sys).
 

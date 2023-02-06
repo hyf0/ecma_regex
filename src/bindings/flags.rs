@@ -20,7 +20,7 @@ bitflags! {
 }
 
 impl FromStr for Flags {
-    type Err = String;
+    type Err = char;
 
     /// https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#advanced_searching_with_flags
     fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -33,7 +33,7 @@ impl FromStr for Flags {
                 's' => flags |= Flags::DOT_ALL,
                 'u' => flags |= Flags::UTF16,
                 'y' => flags |= Flags::STICKY,
-                _ => return Err(format!("invalid flag: \"{c}\"")),
+                _ => return Err(c),
             }
         }
         Ok(flags)

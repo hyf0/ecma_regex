@@ -1,1 +1,1 @@
-mod rspack;
+mod crates;

@@ -1,8 +1,8 @@
 pub(crate) mod bindings;
-pub(crate) mod regex;
+mod regex;
 mod flags;
 pub use bindings::{CompileError};
-pub use crate::regex::Regex;
+pub use crate::regex::{Regex, Match};
 pub use flags::Flags;
 
 

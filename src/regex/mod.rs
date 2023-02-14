@@ -1,4 +1,6 @@
 use std::str::FromStr;
+mod r#match;
+pub use r#match::*;
 
 use crate::{
     bindings::{self},
@@ -67,6 +69,44 @@ impl Regex {
     /// The significance of the starting point is that it takes the surrounding context into consideration. For example, the `\A` anchor can only match when `start == 0`.
     pub fn is_match_at(&self, text: &str, index: usize) -> bool {
         self.exec(text, index).is_some()
+    }
+
+    /// Returns the start and end byte range of the leftmost-first match in
+    /// `text`. If no match exists, then `None` is returned.
+    ///
+    /// Note that this should only be used if you want to discover the position
+    /// of the match. Testing the existence of a match is faster if you use
+    /// `is_match`.
+    ///
+    /// # Example
+    ///
+    /// Find the start and end location of the first word with exactly 13
+    /// Unicode word characters:
+    ///
+    /// ```rust
+    /// # use ecma_regex::Regex;
+    /// # fn main() {
+    /// let text = "I categorically deny having triskaidekaphobia.";
+    /// let mat = Regex::new(r"\b\w{13}\b").unwrap().find(text).unwrap();
+    /// assert_eq!(mat.start(), 2);
+    /// assert_eq!(mat.end(), 15);
+    /// # }
+    /// ```
+    pub fn find<'t>(&self, text: &'t str) -> Option<Match<'t>> {
+        self.find_at(text, 0)
+    }
+
+    /// Returns the same as find, but starts the search at the given
+    /// offset.
+    ///
+    /// The significance of the starting point is that it takes the surrounding
+    /// context into consideration. For example, the `\A` anchor can only
+    /// match when `start == 0`.
+    pub fn find_at<'t>(&self, text: &'t str, start: usize) -> Option<Match<'t>> {
+        let captures = self.exec(text, start)?;
+        let start = captures[0];
+        let end = captures[1];
+        Some(Match::new(text, start, end))
     }
 
     fn exec(&self, text: &str, index: usize) -> Option<Vec<usize>> {

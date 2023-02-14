@@ -44,12 +44,10 @@ pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> Option<Vec<u
     assert!(index <= text.len());
 
     let capture_count = unsafe { lre_get_capture_count(compiled_byte_code.as_ptr()) } as usize;
-    // TODO: why this require usize instead of c_uchar?
-    let mut capture = vec![0 as usize; capture_count * 2];
-
+    let mut capture = vec![0 as *mut u8; capture_count * 2];
     let ret = unsafe {
         lre_exec(
-            capture.as_mut_ptr() as *mut _,
+            capture.as_mut_ptr(),
             compiled_byte_code.as_ptr(),
             text.as_ptr(),
             index.try_into().unwrap(),
@@ -63,10 +61,7 @@ pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> Option<Vec<u
         Some(
             capture
                 .into_iter()
-                .map(|ptr| {
-                    let offset = unsafe { (ptr as *const u8).offset_from(text.as_ptr()) };
-                    offset as usize
-                })
+                .map(|ptr| unsafe { ptr.offset_from(text.as_ptr()) as usize })
                 .collect(),
         )
     } else if ret == 0 {

@@ -43,6 +43,21 @@ impl Regex {
         Ok(Regex { compiled_byte_code })
     }
 
+    /// Returns true if and only if there is a match for the regex in the
+    /// string given.
+    ///
+    /// # Example
+    ///
+    /// Test if some text contains at least one word with exactly 13
+    /// Unicode word characters:
+    ///
+    /// ```rust
+    /// # use ecma_regex::Regex;
+    /// # fn main() {
+    /// let text = "I categorically deny having triskaidekaphobia.";
+    /// assert!(Regex::new(r"\b\w{13}\b").unwrap().is_match(text));
+    /// # }
+    /// ```
     pub fn is_match(&self, text: &str) -> bool {
         self.exec(text, 0).is_some()
     }

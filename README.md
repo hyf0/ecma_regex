@@ -7,4 +7,6 @@ Reliable JavaScript `RegExp` in Rust.
 
 Build on top of [libregexp-sys](https://github.com/hyf0/libregexp-sys).
 
-The API try to align with [regex](https://github.com/rust-lang/regex) crate, credit to the author and contributors.
+# Credit
+
+The API try to align with [regex](https://github.com/rust-lang/regex) crate and reuse it's documents, credit to the author and contributors.

@@ -59,7 +59,14 @@ impl Regex {
     /// # }
     /// ```
     pub fn is_match(&self, text: &str) -> bool {
-        self.exec(text, 0).is_some()
+        self.is_match_at(text, 0)
+    }
+
+    /// Returns the same as is_match, but starts the search at the given offset.
+    ///
+    /// The significance of the starting point is that it takes the surrounding context into consideration. For example, the `\A` anchor can only match when `start == 0`.
+    pub fn is_match_at(&self, text: &str, index: usize) -> bool {
+        self.exec(text, index).is_some()
     }
 
     fn exec(&self, text: &str, index: usize) -> Option<Vec<usize>> {

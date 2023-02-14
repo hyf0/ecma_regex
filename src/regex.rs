@@ -1,6 +1,9 @@
 use std::str::FromStr;
 
-use crate::bindings::{self, Flags};
+use crate::{
+    bindings::{self},
+    Flags,
+};
 
 #[derive(Debug, PartialEq, Eq, Clone, Hash)]
 pub enum Error {

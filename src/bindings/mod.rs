@@ -1,10 +1,10 @@
 use libregexp_sys::{lre_compile, lre_exec, lre_get_capture_count};
-use std::ffi::{c_char, c_int, c_uchar, CString};
+use std::ffi::{c_char, c_int, CString};
 
 mod error;
 pub use error::*;
-mod flags;
-pub use flags::*;
+
+use crate::Flags;
 
 /// The value is copied from the code of QuickJS.
 const MAX_COMPILE_ERROR_MSG_LEN: usize = 64;

@@ -11,7 +11,7 @@ fn main() {
     let input = &args[1];
     let text = &args[2];
 
-    let regex = Regex::from_ecma_literal(input).unwrap();
+    let regex = Regex::unstable_from_ecma_literal(input).unwrap();
 
     println!("is_match: {}", regex.is_match(text));
 }

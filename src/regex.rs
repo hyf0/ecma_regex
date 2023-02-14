@@ -53,20 +53,30 @@ impl Regex {
 
     /// Parse a `Regex` from an ECMA literal.
     ///
+    /// # Pitfalls
+    ///
+    /// If you try to make equivalent [Regex] from JavaScript code.
+    ///
+    /// There are some pitfalls:
+    ///
+    /// Make sure using [raw string literals](https://doc.rust-lang.org/reference/tokens.html#raw-string-literals) of Rust for translating JavaScript RegExp literal.
+    ///
+    /// For example, To translating JavaScript RegExp literal `/\w+/`, you need to write `Regex::from_ecma_literal(r#"/\w+/"#)` instead of `Regex::from_ecma_literal("/\w+/")`.
+    ///
     /// # Examples
     ///
     /// ```rust
     /// use ecma_regex::{Regex, Flags};
     /// assert_eq!(
-    ///   Regex::from_ecma_literal("/abc/"),
-    ///   Regex::new("abc")
+    ///   Regex::unstable_from_ecma_literal(r#"/\w+/"#),
+    ///   Regex::new("\\w+")
     /// );
     /// assert_eq!(
-    ///   Regex::from_ecma_literal("/abc/g"),
-    ///   Regex::with_flags("abc", Flags::GLOBAL)
+    ///   Regex::unstable_from_ecma_literal(r#"/\w+/g"#),
+    ///   Regex::with_flags("\\w+", Flags::GLOBAL)
     /// );
     /// ```
-    pub fn from_ecma_literal(literal: &str) -> Result<Self, Error> {
+    pub fn unstable_from_ecma_literal(literal: &str) -> Result<Self, Error> {
         if !literal.starts_with('/') {
             return Err(Error::ecma_literal_must_start_with_slash(literal));
         }

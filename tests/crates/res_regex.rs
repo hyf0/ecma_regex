@@ -9,7 +9,7 @@ use ecma_regex::Regex;
 #[test]
 fn moz_central() {
     for (i, regex) in REGEXES.iter().enumerate() {
-        let parsed = Regex::from_ecma_literal(regex);
+        let parsed = Regex::unstable_from_ecma_literal(regex);
         assert!(parsed.is_ok(), "{}: failed to parse {}, reason: {:?}", i, regex, parsed.unwrap_err())
     }
 }

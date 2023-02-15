@@ -1,10 +1,12 @@
+pub mod flags;
+
 use libregexp_sys::{lre_compile, lre_exec, lre_get_capture_count};
 use std::ffi::{c_char, c_int, CString};
 
 mod error;
 pub use error::*;
 
-use crate::Flags;
+use self::flags::Flags;
 
 /// The value is copied from the code of QuickJS.
 const MAX_COMPILE_ERROR_MSG_LEN: usize = 64;
@@ -40,7 +42,13 @@ pub fn compile(pattern: &str, flags: Flags) -> Result<Vec<u8>, CompileError> {
     }
 }
 
-pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> Option<Vec<usize>> {
+pub enum ExecResult {
+    Matched(Vec<usize>),
+    NotMatched,
+    Error,
+}
+
+pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> ExecResult {
     assert!(index <= text.len());
 
     let capture_count = unsafe { lre_get_capture_count(compiled_byte_code.as_ptr()) } as usize;
@@ -58,16 +66,17 @@ pub fn exec(compiled_byte_code: &[u8], text: &str, index: usize) -> Option<Vec<u
     };
 
     if ret == 1 {
-        Some(
+        ExecResult::Matched(
             capture
                 .into_iter()
                 .map(|ptr| unsafe { ptr.offset_from(text.as_ptr()) as usize })
                 .collect(),
         )
     } else if ret == 0 {
-        None
+        ExecResult::NotMatched
+    } else if ret == 1 {
+        ExecResult::Error
     } else {
-        // Errored
-        panic!("TODO")
+        unreachable!("unexpected return value: {ret} from `lre_exec` in QuickJS")
     }
 }

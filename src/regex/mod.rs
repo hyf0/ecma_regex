@@ -1,31 +1,10 @@
-use std::str::FromStr;
-mod r#match;
-pub use r#match::*;
+pub mod error;
+pub mod r#match;
+pub mod matches;
 
-use crate::{
-    bindings::{self},
-    Flags,
-};
+use crate::bindings::{self, flags::Flags};
 
-#[derive(Debug, PartialEq, Eq, Clone, Hash)]
-pub enum Error {
-    InvalidFlag(char),
-    SyntaxError(String),
-}
-
-impl Error {
-    pub fn invalid_flag(flag: char) -> Self {
-        Error::InvalidFlag(flag)
-    }
-
-    pub fn ecma_literal_must_start_with_slash(got: &str) -> Self {
-        Error::SyntaxError(format!("ECMA literal must start with /, got {got}"))
-    }
-
-    pub fn ecma_literal_must_have_end_slash() -> Self {
-        Error::SyntaxError(format!("ECMA literal must have end /"))
-    }
-}
+use self::{error::Error, matches::Matches, r#match::Match};
 
 #[derive(Debug, Hash, PartialEq, Eq, Clone)]
 pub struct Regex {
@@ -37,10 +16,10 @@ impl Regex {
         Self::with_flags(pat, Flags::empty())
     }
 
-    pub fn with_flags(pat: &str, flags: Flags) -> Result<Self, Error> {
+    fn with_flags(pat: &str, flags: Flags) -> Result<Self, Error> {
         let compiled_byte_code = bindings::compile(pat, flags).map_err(|e| match e {
-            bindings::CompileError::Invalid(e) => Error::SyntaxError(e.to_string()),
-            bindings::CompileError::CompileFailed(e) => Error::SyntaxError(e),
+            bindings::CompileError::Invalid(e) => Error::Syntax(e.to_string()),
+            bindings::CompileError::CompileFailed(e) => Error::Syntax(e),
         })?;
         Ok(Regex { compiled_byte_code })
     }
@@ -109,67 +88,38 @@ impl Regex {
         Some(Match::new(text, start, end))
     }
 
-    fn exec(&self, text: &str, index: usize) -> Option<Vec<usize>> {
-        bindings::exec(&self.compiled_byte_code, text, index)
-    }
-
-    /// Parse a `Regex` from an ECMA literal.
+    /// Returns an iterator for each successive non-overlapping match in
+    /// `text`, returning the start and end byte indices with respect to
+    /// `text`.
     ///
-    /// # Pitfalls
+    /// # Example
     ///
-    /// If you try to make equivalent [Regex] from JavaScript code.
-    ///
-    /// There are some pitfalls:
-    ///
-    /// Make sure using [raw string literals](https://doc.rust-lang.org/reference/tokens.html#raw-string-literals) of Rust for translating JavaScript RegExp literal.
-    ///
-    /// For example, To translating JavaScript RegExp literal `/\w+/`, you need to write `Regex::from_ecma_literal(r#"/\w+/"#)` instead of `Regex::from_ecma_literal("/\w+/")`.
-    ///
-    /// # Examples
+    /// Find the start and end location of every word with exactly 13 Unicode
+    /// word characters:
     ///
     /// ```rust
-    /// use ecma_regex::{Regex, Flags};
-    /// assert_eq!(
-    ///   Regex::unstable_from_ecma_literal(r#"/\w+/"#),
-    ///   Regex::new("\\w+")
-    /// );
-    /// assert_eq!(
-    ///   Regex::unstable_from_ecma_literal(r#"/\w+/g"#),
-    ///   Regex::with_flags("\\w+", Flags::GLOBAL)
-    /// );
+    /// # use ecma_regex::Regex;
+    /// # fn main() {
+    /// let text = "Retroactively relinquishing remunerations is reprehensible.";
+    /// let re = Regex::new(r"\b\w{13}\b").unwrap();
+    /// let mut iter = re.find_iter(text);
+    /// assert_eq!(iter.next().unwrap().as_str(), "Retroactively");
+    /// assert_eq!(iter.next().unwrap().as_str(), "relinquishing");
+    /// assert_eq!(iter.next().unwrap().as_str(), "remunerations");
+    /// assert_eq!(iter.next().unwrap().as_str(), "reprehensible");
+    /// assert!(iter.next().is_none());
+    /// # }
     /// ```
-    pub fn unstable_from_ecma_literal(literal: &str) -> Result<Self, Error> {
-        if !literal.starts_with('/') {
-            return Err(Error::ecma_literal_must_start_with_slash(literal));
+    pub fn find_iter<'r, 't>(&'r self, text: &'t str) -> Matches<'r, 't> {
+        Matches::new(self, text)
+    }
+
+    fn exec(&self, text: &str, index: usize) -> Option<Vec<usize>> {
+        match bindings::exec(&self.compiled_byte_code, text, index) {
+            bindings::ExecResult::Matched(matched) => Some(matched),
+            bindings::ExecResult::NotMatched => None,
+            // TODO: return error
+            bindings::ExecResult::Error => None,
         }
-
-        // Fast path
-        if literal.ends_with('/') {
-            let pat = &literal[1..literal.len() - 1];
-            return Self::new(pat);
-        }
-
-        let end_slash_pos = literal
-            .bytes()
-            .enumerate()
-            .rev()
-            .find_map(|(i, b)| (b == b'/').then_some(i))
-            .ok_or_else(|| Error::ecma_literal_must_have_end_slash())?;
-
-        if end_slash_pos == 1 {
-            return Err(Error::ecma_literal_must_have_end_slash());
-        }
-
-        let flags = if end_slash_pos == literal.len() {
-            Flags::empty()
-        } else {
-            let flags_start = end_slash_pos + 1;
-            let flags_str = &literal[flags_start..];
-            Flags::from_str(flags_str).map_err(|invalid_flag| Error::invalid_flag(invalid_flag))?
-        };
-
-        let pat = &literal[1..end_slash_pos];
-
-        Self::with_flags(pat, flags)
     }
 }

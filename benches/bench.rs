@@ -1,6 +1,6 @@
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 use ecma_regex::Regex as EcmaRegex;
-use regex::Regex;
+use rs_regex::Regex;
 
 const TEXT: &'static str = "0123bcde89";
 

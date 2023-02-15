@@ -1,5 +1,9 @@
 # ecma_regex
 
+[![document](https://docs.rs/sugar_path/badge.svg)](https://docs.rs/crate/ecma_regex)
+[![crate version](https://img.shields.io/crates/v/sugar_path.svg)](https://crates.io/crates/ecma_regex) 
+[![MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 The goal of `ecma_regex` is to provide the same functionality as the [regex](https://github.com/rust-lang/regex) crate in ECMAScript regular expression syntax.
 
 - Reliable regex engine from QuickJS

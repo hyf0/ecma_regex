@@ -56,10 +56,10 @@ fn ecma_regex_pre_compile(c: &mut Criterion) {
 criterion_group!(
     benches,
     regex,
-    regress,
     ecma_regex,
-    regress_pre_compile,
+    regress,
     regex_pre_compile,
-    ecma_regex_pre_compile
+    ecma_regex_pre_compile,
+    regress_pre_compile,
 );
 criterion_main!(benches);

@@ -115,11 +115,6 @@ impl Regex {
     }
 
     fn exec(&self, text: &str, index: usize) -> Option<Vec<usize>> {
-        match bindings::exec(&self.compiled_byte_code, text, index) {
-            bindings::ExecResult::Matched(matched) => Some(matched),
-            bindings::ExecResult::NotMatched => None,
-            // TODO: return error
-            bindings::ExecResult::Error => None,
-        }
+        bindings::exec(&self.compiled_byte_code, text, index).unwrap()
     }
 }
